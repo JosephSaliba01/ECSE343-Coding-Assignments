@@ -3,7 +3,6 @@ __author__ = 'Joseph Saliba 260975670.'
 __copyright__ = 'Own work with base file provided by McGill.'
 
 # import statements
-from logging import getLoggerClass
 from sys import base_prefix
 import matplotlib.pyplot as plt   # plotting
 from scipy.linalg import lu_factor, lu_solve  # scipy's LU solver
@@ -140,13 +139,7 @@ def CreateBlurMatrix(kernel1Dx, width, height):
 
     for i in range(n):
         for e, j in enumerate(range(i - k // 2, i + k // 2 + 1)):
-            # print(f'{i=}, {width=}, {width * (i + 1)=}, {j =}')
-            if j < 0:
-                A[i, width + j] = kernel1Dx[e]
-            elif j >= (i // 100 + 1) * width:
-                A[i, j - width] = kernel1Dx[e]
-            else:
-                A[i, j] = kernel1Dx[e]
+            A[i, j % n] = kernel1Dx[e]
 
     return A
 
@@ -182,6 +175,8 @@ def DeblurImage(blurMatrix, blurred_image):
 # Feel free to write and include your own tests here.
 # Code in this main block will not count for credit,
 # but the collaboration and plagiarism policies still hold.
+
+
 def main():
     print("\n\n[Deliverable 1] LU Factorization\n\n")
     test_matrix = np.array([[2, -1, -2],

@@ -1,7 +1,9 @@
+"""ECSE343 Assignment 2."""
+__author__ = 'Joseph Saliba 260975670.'
+__copyright__ = 'Own work with base file provided by McGill.'
+
 # DO NOT EDIT THESE IMPORT STATEMENTS!
 import math
-from re import X
-from tkinter import N
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
@@ -332,15 +334,19 @@ def normalization(gmm):
     Returns:
     Nothing, but you should modify gmm.beta
     """
-    # TODO: correct iteration
-    for i in range(0, gmm.n_samples):
-        gmm.beta[i] = sum(
-            gmm.pi[c] * gmm.gauss[c].pdf(x=gmm.X[i])
-            for c in range(0, gmm.n_components)
-        )
 
+    gmm.beta = sum(gmm.pi[j] * gmm.gauss[j].pdf(x=gmm.X)
+                   for j in range(0, gmm.n_components))
+
+    # for i in range(0, gmm.n_samples):
+    #     gmm.beta[i] = sum(
+    #         gmm.pi[c] * gmm.gauss[c].pdf(x=gmm.X[i])
+    #         for c in range(0, gmm.n_components)
+    #     )
 
 # [TODO] Deliverable 5: E-Step
+
+
 def expectation(gmm):
     """
     The expectation step
@@ -351,11 +357,10 @@ def expectation(gmm):
     Returns:
     Nothing, but you should modify gmm.alpha
     """
-    # TODO: correct iteration
-    for i in range(0, gmm.n_samples):
-        for j in range(0, gmm.n_components):
-            gmm.alpha[i, j] = (
-                gmm.pi[j] * gmm.gauss[j].pdf(x=gmm.X[i])) / gmm.beta[i]
+
+    for j in range(0, gmm.n_components):
+        gmm.alpha[:, j] = gmm.pi[j] * gmm.gauss[j].pdf(x=gmm.X) / gmm.beta
+
 
 # [TODO] Deliverable 6: M-Step
 
@@ -377,70 +382,36 @@ def maximization(gmm):
     # Hint 2: don't forgot to regularize your covariance matrices with gmm.reg_cov
 
     # z
-    # for i in range(0, gmm.alpha.shape[0]):
-    #     gmm.Z[i] = np.argmax(gmm.alpha[i])
-
     gmm.Z = np.argmax(gmm.alpha, axis=1)
 
     # w
     for j in range(0, gmm.n_components):
-        gmm.weight[j] = np.sum(gmm.alpha[0:, j])
+        gmm.weight[j] = np.sum(gmm.alpha[:, j])
 
     # pi
     gmm.pi = gmm.weight / gmm.n_samples
 
     # mu
     for j in range(0, gmm.n_components):
-        gmm.mu[j] = sum(gmm.alpha[i, j] * gmm.X[i]
-                        for i in range(0, gmm.n_samples)) / gmm.weight[j]
-
-    # for j in range(0, gmm.n_components):
-    #     gmm.mu[j] = sum(gmm.alpha[:, j] @ gmm.X) / gmm.weight[j]
+        gmm.mu[j] = sum(
+            np.reshape(gmm.alpha[:, j], (1, gmm.n_samples)) @ gmm.X
+        ) / gmm.weight[j]
 
     # cov
     for j in range(0, gmm.n_components):
         gmm.cov[j] = (
             sum(
-                gmm.alpha[i, j] * np.reshape((gmm.X[i] - gmm.mu[j]), (2, 1)) @ np.reshape((gmm.X[i] - gmm.mu[j]), (1, 2)) for i in range(0, gmm.n_samples)
+                gmm.alpha[i, j] * np.reshape((gmm.X[i] - gmm.mu[j]), (2, 1))
+                @ np.reshape((gmm.X[i] - gmm.mu[j]), (1, 2))
+                for i in range(0, gmm.n_samples)
             )
         ) / gmm.weight[j] + gmm.reg_cov
-
-        # for i in range(0, gmm.n_samples):
-        #     print(f"""
-        #         -------------------------------------------------------------
-        #         Iter: {i} \ {gmm.n_samples - 1}:\n
-        #         {gmm.alpha[i, j]=}\n
-        #         {gmm.beta[i]=}\n
-        #         {gmm.X[i]=}\n
-        #         {gmm.mu[j]=}\n
-        #         {(gmm.X[i] - gmm.mu[j])=}\n
-        #         {((gmm.X[i] - gmm.mu[j]).T @ (gmm.X[i] - gmm.mu[j]))=}\n
-        #         {gmm.weight[j]=}\n
-
-        #         Info:\n
-        #         {gmm.X.shape=}
-        #         {gmm.mu.shape=}
-        #         {gmm.weight.shape=}
-        #         {gmm.alpha.shape=}
-        #         {gmm.beta.shape=}
-        #         {gmm.cov.shape=}
-        #         {gmm.Z.shape=}
-        #         {gmm.pi.shape=}
-        #         -------------------------------------------------------------
-        #         """
-        #           )
 
     gmm.gauss = []
     for c in range(gmm.n_components):
         gmm.gauss.append(multivariate_normal(mean=gmm.mu[c, :],
                                              cov=gmm.cov[c, :, :]))
 
-    # print(f"""
-    #         =============================================
-    #         Maximization step over: Updated  Variables
-    #         =============================================
-    #     """)
-    # breakpoint()
 
 # [TODO] Deliverable 7: Compute the log-likelihood
 
@@ -455,10 +426,7 @@ def logLikelihood(gmm):
     Returns:
     Nothing, but you should modify gmm.log_likelihoods
     """
-
-    # Note: you need to append to gmm.log_likelihoods
-    gmm.log_likelihoods.append(
-        sum(np.log(gmm.beta[i]) for i in range(0, gmm.n_samples)))
+    gmm.log_likelihoods.append(sum(np.log(gmm.beta)))
 
 
 # Some example test routines for the deliverables.
