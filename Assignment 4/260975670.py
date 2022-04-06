@@ -79,11 +79,25 @@ def FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
 # blur_kernel2d - 2D n x n blur kernel in the primal domain
 # image_shape - 2-tuple with the dimensions of the input image
 # (and output kernel and output image, and all of their Fourier transformed duals)
-# DFT2D_func (optional) - the 2D DFT function that you'd like to use,
+# DFT2D_func (optional) - the 2D DFT function that you'd like to u5se,
 # e.g., if you'd like to debug with a DFT implementation other than your own
 def LaplacianInverseFourierKernel(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
+
     K_hat_reg_inv = np.zeros(image_shape, dtype=complex)
 
+    #laplacian regularization kernel
+    l_kernel = np.array(
+        [[ 0, 1,  0],
+         [ 1, -4, 1],
+         [ 0, 1,  0]]
+    )
+
+    K_hat = FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func)
+    L_hat = FourierKernelMatrix(l_kernel, image_shape, DFT2D_func)
+
+    lamb = 0.000000034
+
+    K_hat_reg_inv = K_hat / (np.absolute(K_hat)**2 + lamb * np.absolute(L_hat)**2)
 
     return K_hat_reg_inv
 
@@ -164,6 +178,24 @@ def main():
     # TODO: consider writing more extensive tests, here...
 
     print("[Deliverable 6] Laplacian-regularized Fourier Deconvolution")
+
+    # for i in range(1, 10):
+    #     lamb = i * 0.000001
+    #     K_hat_reg_inv = LaplacianInverseFourierKernel(kernel2d, blurred_noisy_image.shape, DFT2D)
+    #     cmap = plt.get_cmap('gray')
+    #     _, plots = plt.subplots(1, 2, figsize=(10, 7))
+    #     plt.setp(plots, xticks=[], yticks=[])
+
+    #     plots[0].set_title('blurred image + noise - from file', size=8)
+    #     plots[0].imshow(blurred_noisy_image, cmap, vmin=0, vmax=1)
+
+    #     deblurred_output = np.real(iDFT2D(DFT2D(blurred_noisy_image) * K_hat_reg_inv))
+    #     plots[1].set_title(f'FFT Deblurred (Laplacian regularization) {lamb=}', size=8)
+    #     plots[1].imshow(deblurred_output, cmap, vmin=0, vmax=1)
+    #     plt.show()  # this is a blocking call; kill the plotting window to continue execution
+
+    # quit()
+
     K_hat_reg_inv = LaplacianInverseFourierKernel(kernel2d, blurred_noisy_image.shape, DFT2D)
     # TODO: consider writing more extensive tests, here...
 
