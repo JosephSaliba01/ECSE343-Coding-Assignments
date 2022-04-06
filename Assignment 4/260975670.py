@@ -1,9 +1,8 @@
 # [TODO] Rename this file to [your student ID].py
 
 # DO NOT EDIT THESE IMPORT STATEMENTS!
-import sys
 import matplotlib.pyplot as plt   # plottingZ
-import numpy as np                # all of numpy...
+import numpy as np             # all of numpy...
 # del sys.modules["numpy"].fft      # ... except FFT helpers
 ##########################
 
@@ -52,9 +51,27 @@ def iDFT2D(inSignal2D: complex):
 # DFT2D_func (optional) - the 2D DFT function that you'd like to use,
 # e.g., if you'd like to debug with a DFT implementation other than your own
 def FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
+    width, height = image_shape
+    K = np.zeros(image_shape, dtype=complex)
     K_hat = np.zeros(image_shape, dtype=complex)
-    # BEGIN SOLUTION
-    # END SOLUTION
+    k = blur_kernel2d.shape[0]
+
+    padded_grid = np.pad(
+        np.arange(width * height).reshape(width, height),
+        (k//2, k//2),
+        mode='wrap'
+    )
+
+    strides = np.lib.stride_tricks.sliding_window_view(
+        padded_grid, (k, k)).reshape(width * height, k ** 2)
+
+    K = K.flatten()
+
+    K[strides[0]] = blur_kernel2d.flatten()
+    K = K.reshape(image_shape)
+
+    K_hat = DFT2D_func(K)
+
     return K_hat
 
 
@@ -66,8 +83,8 @@ def FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
 # e.g., if you'd like to debug with a DFT implementation other than your own
 def LaplacianInverseFourierKernel(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
     K_hat_reg_inv = np.zeros(image_shape, dtype=complex)
-    # BEGIN SOLUTION
-    # END SOLUTION
+
+
     return K_hat_reg_inv
 
 
@@ -127,7 +144,6 @@ def main():
     print(np.allclose(iDFT2D(test_signal_2d), np.fft.ifft2(test_signal_2d)))
          
     # TODO: consider writing more extensive tests, here...
-    quit()
 
     print("[Deliverable 5] Fourier Convolution Kernel Matrix")
     # FYI, our test data blur kernel (kernel2d) is a 61 x 61 2D Isotropic
