@@ -1,9 +1,12 @@
-# [TODO] Rename this file to [your student ID].py
+"""ECSE343 Assignment 4."""
+__author__ = 'Joseph Saliba 260975670.'
+__copyright__ = 'Own work with base file provided by McGill.'
 
 # DO NOT EDIT THESE IMPORT STATEMENTS!
-import matplotlib.pyplot as plt   # plottingZ
-import numpy as np             # all of numpy...
-# del sys.modules["numpy"].fft      # ... except FFT helpers
+import sys
+import matplotlib.pyplot as plt   # plotting 
+import numpy as np                # all of numpy...
+del sys.modules["numpy"].fft      # ... except FFT helpers
 ##########################
 
 
@@ -16,7 +19,10 @@ def DFT(inSignal, s: int = -1):
     N = inSignal.shape[0]
     n = np.arange(N)
     k = n.reshape((N, 1))
-    M = np.exp(2j * np.pi * s * k * n / N)
+    # M = np.exp(2j * np.pi * s * k * n / N)
+
+    x = 2 * np.pi * s * k * n / N
+    M = np.cos(x) + 1j * np.sin(x)
 
     y = np.dot(M, inSignal)
 
@@ -93,13 +99,10 @@ def LaplacianInverseFourierKernel(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
 
     K_hat = FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func)
     L_hat = FourierKernelMatrix(l_kernel, image_shape, DFT2D_func) 
-    # TODO ask if it's alright to use del5 ^
 
     lamb = 0.0000000415
-    # TODO ask about lambda ^
 
     K_hat_reg_inv = K_hat / (np.absolute(K_hat)**2 + lamb * np.absolute(L_hat)**2)
-    # TODO ask if formula is right ^
 
     return K_hat_reg_inv
 
@@ -121,8 +124,6 @@ def main():
     test_signal_1d = np.random.rand(32)
 
     print(np.allclose(test_signal_1d, iDFT(DFT(test_signal_1d))))
-    print(np.allclose(DFT(test_signal_1d), np.fft.fft(test_signal_1d)))
-    print(np.allclose(iDFT(test_signal_1d), np.fft.ifft(test_signal_1d)))
 
     # TODO: consider writing more extensive tests, here...
 
@@ -156,8 +157,6 @@ def main():
     # breakpoint()
 
     print(np.allclose(test_signal_2d, iDFT2D(DFT2D(test_signal_2d))))
-    print(np.allclose(DFT2D(test_signal_2d), np.fft.fft2(test_signal_2d)))
-    print(np.allclose(iDFT2D(test_signal_2d), np.fft.ifft2(test_signal_2d)))
          
     # TODO: consider writing more extensive tests, here...
 
@@ -167,7 +166,7 @@ def main():
     test_input_image = np.zeros((128, 128))
     test_input_image[50:80, 50:80] = 1
     
-    # test_input_image = np.load('bird.npy')
+    test_input_image = np.load('flower.npy')
 
     K_hat = FourierKernelMatrix(kernel2d, test_input_image.shape, DFT2D)
     blurred_image = np.real(iDFT2D(DFT2D(test_input_image) * K_hat))
@@ -180,6 +179,7 @@ def main():
     plots[1].set_title('blurred output image', size=8)
     plots[1].imshow(blurred_image, cmap, vmin=0, vmax=1)
     plt.show()  # this is a blocking call; kill the plotting window to continue execution
+
     # TODO: consider writing more extensive tests, here...
 
     print("[Deliverable 6] Laplacian-regularized Fourier Deconvolution")
