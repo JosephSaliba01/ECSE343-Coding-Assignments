@@ -82,7 +82,6 @@ def FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
 # DFT2D_func (optional) - the 2D DFT function that you'd like to u5se,
 # e.g., if you'd like to debug with a DFT implementation other than your own
 def LaplacianInverseFourierKernel(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
-
     K_hat_reg_inv = np.zeros(image_shape, dtype=complex)
 
     #laplacian regularization kernel
@@ -93,11 +92,14 @@ def LaplacianInverseFourierKernel(blur_kernel2d, image_shape, DFT2D_func=DFT2D):
     )
 
     K_hat = FourierKernelMatrix(blur_kernel2d, image_shape, DFT2D_func)
-    L_hat = FourierKernelMatrix(l_kernel, image_shape, DFT2D_func)
+    L_hat = FourierKernelMatrix(l_kernel, image_shape, DFT2D_func) 
+    # TODO ask if it's alright to use del5 ^
 
-    lamb = 0.000000034
+    lamb = 0.0000000415
+    # TODO ask about lambda ^
 
     K_hat_reg_inv = K_hat / (np.absolute(K_hat)**2 + lamb * np.absolute(L_hat)**2)
+    # TODO ask if formula is right ^
 
     return K_hat_reg_inv
 
@@ -164,6 +166,9 @@ def main():
     # Gaussian with sigma = 10.0, i.e., Gaussian2D(61, 10.) from A3
     test_input_image = np.zeros((128, 128))
     test_input_image[50:80, 50:80] = 1
+    
+    # test_input_image = np.load('bird.npy')
+
     K_hat = FourierKernelMatrix(kernel2d, test_input_image.shape, DFT2D)
     blurred_image = np.real(iDFT2D(DFT2D(test_input_image) * K_hat))
 
